@@ -72,3 +72,7 @@ samples_part=OfdmTransceiver.ResourceGrid2ComlexTime(rg);
 samples_part=samples_part(samples_offset:symbs_received*SPS);
 
 %%
+... rcd=received
+rcd=struct();
+[rcd.NCellId,rcd.kSSB,~,rcd.samples]=SsFinder.processSignalByPeakNo(samples_part,0,23,SPS,1,0.9);
+%%
