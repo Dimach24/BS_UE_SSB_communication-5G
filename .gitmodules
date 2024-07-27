@@ -1,0 +1,3 @@
+[submodule "SsFinder"]
+	path = SsFinder
+	url = git@github.com:Dimach24/SsFinder.git
