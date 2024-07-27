@@ -18,6 +18,8 @@ tran_bandwidth = 60;
 toff    =0;
 foff    =k_SSB;
 
+samples_offset = 70000;
+symbs_received = 52;
 
 
 kSSB_bin=int2bit(k_SSB,4).';
@@ -53,6 +55,8 @@ end
 
 rg=ResourceTransmitter.GenerateFrame(bits,NCellId,caseL,pointA,tran_bandwidth,toff,foff,[1,1,0.85,0.9]);
 
+% samples per symbol (~sample rate)
+SPS=size(rg,1);
 %%
 plt=pcolor(abs(rg(1:301,1:50)));
 plt.EdgeColor='none';
@@ -61,3 +65,10 @@ ca.YDir='normal';
 xlim([1,50]);
 xlabel('l+1 (номер OFDM символа +1)')
 ylabel('k (номер поднесущей)')
+
+%%
+
+samples_part=OfdmTransceiver.ResourceGrid2ComlexTime(rg);
+samples_part=samples_part(samples_offset:symbs_received*SPS);
+
+%%
