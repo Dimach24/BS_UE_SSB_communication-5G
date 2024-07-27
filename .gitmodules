@@ -4,3 +4,15 @@
 [submodule "ResourceTransmitter-5G"]
 	path = ResourceTransmitter-5G
 	url = git@github.com:Dimach24/ResourceTransmitter-5G.git
+[submodule "PbchReceiver"]
+	path = PbchReceiver
+	url = git@github.com:Dimach24/PbchReceiver.git
+[submodule "Resource-Receiver-5G"]
+	path = Resource-Receiver-5G
+	url = git@github.com:Dimach24/Resource-Receiver-5G.git
+[submodule "WaveFormer"]
+	path = WaveFormer
+	url = git@github.com:Dymcos/WaveFormer.git
+[submodule "PbchGenerator"]
+	path = PbchGenerator
+	url = git@github.com:Dymcos/PbchGenerator.git
