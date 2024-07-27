@@ -18,8 +18,8 @@ tran_bandwidth = 60;
 toff    =0;
 foff    =k_SSB;
 
-samples_offset = 70000;
-symbs_received = 52;
+samples_offset = 27000;
+symbs_received = 60;
 
 
 kSSB_bin=int2bit(k_SSB,4).';
@@ -58,6 +58,7 @@ rg=ResourceTransmitter.GenerateFrame(bits,NCellId,caseL,pointA,tran_bandwidth,to
 % samples per symbol (~sample rate)
 SPS=size(rg,1);
 %%
+subplot(2,1,1);
 plt=pcolor(abs(rg(1:301,1:50)));
 plt.EdgeColor='none';
 ca=gca();
@@ -65,14 +66,31 @@ ca.YDir='normal';
 xlim([1,50]);
 xlabel('l+1 (номер OFDM символа +1)')
 ylabel('k (номер поднесущей)')
-
+text(40,80,sprintf("NcellID=%d\nkSSB=%d\nSFN=%d",NCellId,k_SSB,SFN_MSB+SFN_LSB),"BackgroundColor","white");
+title('Отправлено');
 %%
 
 samples_part=OfdmTransceiver.ResourceGrid2ComlexTime(rg);
-samples_part=samples_part(samples_offset:symbs_received*SPS);
+samples_part=samples_part(samples_offset:samples_offset+symbs_received*SPS);
 
 %%
 ... rcd=received
 rcd=struct();
-[rcd.NCellId,rcd.kSSB,~,rcd.samples]=SsFinder.processSignalByPeakNo(samples_part,0,23,SPS,1,0.9);
+[rcd.NCellId,rcd.k_SSB,rcd.tindex,rcd.samples]=SsFinder.processSignalByPeakNo(samples_part,0,23,SPS,1,0.9);
+%%
+rcd.samples=[rcd.samples, zeros(1,SPS-mod(length(rcd.samples),SPS))];
+rcd.rg=OfdmTransceiver.ComplexTime2ResourceGrid(rcd.samples,SPS);
+%%
+subplot(2,1,2)
+plt=pcolor(abs(rcd.rg(1:301,1:end)));
+plt.EdgeColor='none';
+ca=gca();
+ca.YDir='normal';
+xlim([1,50]);
+xlabel('l+1 (номер OFDM символа +1)')
+ylabel('k (номер поднесущей)')
+title(sprintf('Принято со сдвигом ≈ %.4g, обрезано по %.4g',samples_offset/SPS,(rcd.tindex+samples_offset)/SPS));
+
+
+text(40,80,sprintf("NcellID=%d\nkSSB=%d\nSFN=%d",rcd.NCellId,rcd.k_SSB,SFN_MSB+SFN_LSB),"BackgroundColor","white");
 %%
