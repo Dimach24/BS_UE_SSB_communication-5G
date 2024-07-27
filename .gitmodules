@@ -1,3 +1,6 @@
 [submodule "SsFinder"]
 	path = SsFinder
 	url = git@github.com:Dimach24/SsFinder.git
+[submodule "ResourceTransmitter-5G"]
+	path = ResourceTransmitter-5G
+	url = git@github.com:Dimach24/ResourceTransmitter-5G.git
