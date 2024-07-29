@@ -2,6 +2,7 @@ clc;
 clear all; %#ok<CLALL>
 close all;
 addpath(genpath(pwd))
+hold on;
 %%
 
 NCellId=17;
@@ -66,7 +67,7 @@ ca.YDir='normal';
 xlim([1,50]);
 xlabel('l+1 (номер OFDM символа +1)')
 ylabel('k (номер поднесущей)')
-text(40,80,sprintf("NcellID=%d\nkSSB=%d\nSFN=%d",NCellId,k_SSB,SFN_MSB+SFN_LSB),"BackgroundColor","white");
+text(36,80,sprintf("NcellID=%d\nkSSB=%d\nSFN=%d",NCellId,k_SSB,SFN_MSB+SFN_LSB),"BackgroundColor","white");
 title('Отправлено');
 %%
 
@@ -80,6 +81,11 @@ rcd=struct();
 %%
 rcd.samples=[rcd.samples, zeros(1,SPS-mod(length(rcd.samples),SPS))];
 rcd.rg=OfdmTransceiver.ComplexTime2ResourceGrid(rcd.samples,SPS);
+
+%%
+[pbch,dmrs]=ResourceReceiver.PbchExtraction(rcd.rg,0,rcd.k_SSB,rcd.NCellId);
+rcd.issb=ResourceReceiver.PbchDmRsProcessing(dmrs,rcd.NCellId);
+
 %%
 subplot(2,1,2)
 plt=pcolor(abs(rcd.rg(1:301,1:end)));
@@ -91,6 +97,4 @@ xlabel('l+1 (номер OFDM символа +1)')
 ylabel('k (номер поднесущей)')
 title(sprintf('Принято со сдвигом ≈ %.4g, обрезано по %.4g',samples_offset/SPS,(rcd.tindex+samples_offset)/SPS));
 
-
-text(40,80,sprintf("NcellID=%d\nkSSB=%d\nSFN=%d",rcd.NCellId,rcd.k_SSB,SFN_MSB+SFN_LSB),"BackgroundColor","white");
-%%
+text(36,80,sprintf("NcellID=%d\nkSSB=%d\nSFN=%d\nИндекс блока=%d",rcd.NCellId,rcd.k_SSB,SFN_MSB+SFN_LSB,rcd.issb),"BackgroundColor","white");
