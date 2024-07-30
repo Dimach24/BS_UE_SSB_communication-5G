@@ -83,8 +83,8 @@ rcd.samples=[rcd.samples, zeros(1,SPS-mod(length(rcd.samples),SPS))];
 rcd.rg=OfdmTransceiver.ComplexTime2ResourceGrid(rcd.samples,SPS);
 
 %%
-[pbch,dmrs]=ResourceReceiver.PbchExtraction(rcd.rg,0,rcd.k_SSB,rcd.NCellId);
-rcd.issb=ResourceReceiver.PbchDmRsProcessing(dmrs,rcd.NCellId);
+[rcd.pbch,rcd.dmrs]=ResourceReceiver.PbchExtraction(rcd.rg,0,rcd.k_SSB,rcd.NCellId);
+rcd.issb=ResourceReceiver.PbchDmRsProcessing(rcd.dmrs,rcd.NCellId);
 
 %%
 subplot(2,1,2)
@@ -97,4 +97,15 @@ xlabel('l+1 (номер OFDM символа +1)')
 ylabel('k (номер поднесущей)')
 title(sprintf('Принято со сдвигом ≈ %.4g, обрезано по %.4g',samples_offset/SPS,(rcd.tindex+samples_offset)/SPS));
 
-text(36,80,sprintf("NcellID=%d\nkSSB=%d\nSFN=%d\nИндекс блока=%d",rcd.NCellId,rcd.k_SSB,SFN_MSB+SFN_LSB,rcd.issb),"BackgroundColor","white");
+text(36,80,...
+     sprintf("NcellID=%d\nkSSB=%d\nSFN=%d\nИндекс блока: %d",...
+            rcd.NCellId,rcd.k_SSB,SFN_MSB+SFN_LSB,rcd.issb),...
+    "BackgroundColor","white");
+%%
+[rcd.data,rcd.valid_crc]=PbchReceiver.receivePbch(rcd.pbch,rcd.NCellId,Lmax_);
+disp(rcd.data)
+if (rcd.valid_crc)
+    disp("data verification success")
+else
+    disp("data verification failure")
+end
