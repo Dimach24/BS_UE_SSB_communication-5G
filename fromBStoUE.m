@@ -102,8 +102,9 @@ text(36,80,...
             rcd.NCellId,rcd.k_SSB,SFN_MSB+SFN_LSB,rcd.issb),...
     "BackgroundColor","white");
 %%
-[rcd.data,rcd.valid_crc]=PbchReceiver.receivePbch(rcd.pbch,rcd.NCellId,Lmax_);
+[rcd.data,rcd.valid_crc]=PbchReceiver.receivePbch(cast(rcd.pbch,"double"),rcd.NCellId,Lmax_);
 disp(rcd.data)
+disp(rcd.data.mib)
 if (rcd.valid_crc)
     disp("data verification success")
 else
