@@ -83,8 +83,7 @@ rcd.samples=[rcd.samples, zeros(1,SPS-mod(length(rcd.samples),SPS))];
 rcd.rg=OfdmTransceiver.ComplexTime2ResourceGrid(rcd.samples,SPS);
 
 %%
-[rcd.pbch,rcd.dmrs]=ResourceReceiver.PbchExtraction(rcd.rg,0,rcd.k_SSB,rcd.NCellId);
-rcd.issb=ResourceReceiver.PbchDmRsProcessing(rcd.dmrs,rcd.NCellId);
+[rcd.pbch,rcd.issb]=ResourceReceiver.getBitstream(rcd.rg,0,rcd.k_SSB,rcd.NCellId,Lmax_);
 
 %%
 subplot(2,1,2)
