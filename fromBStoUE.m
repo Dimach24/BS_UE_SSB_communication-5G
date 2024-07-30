@@ -23,11 +23,11 @@ samples_offset = 27000;
 symbs_received = 60;
 
 
-kSSB_bin=int2bit(k_SSB,4).';
+kSSB_bin=int2bit(k_SSB,4,false).';
 MIB     =[...
     int2bit(SFN_MSB,6).',   ... % SFN_MSB
     (scs==15||scs==60),     ... % scs15or60
-    kSSB_bin(1:4)           ... % kSsbLsb
+    kSSB_bin(4:-1:1)           ... % kSsbLsb
     1,                      ... % dmrs pos3
     1,1,1,1,                ... % sib.RB=15
     0,1,0,1,    ... % sib.searchSpaceZero=5
