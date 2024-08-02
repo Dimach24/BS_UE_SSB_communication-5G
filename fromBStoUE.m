@@ -2,7 +2,6 @@ clc;
 clear all; %#ok<CLALL>
 close all;
 addpath(genpath(pwd))
-hold on;
 %%
 
 NCellId=17;
@@ -13,8 +12,10 @@ pointA  = 4.4;  % GHz
 Lmax_   = 8;   % amount of SSB in the HALF-FRAME
 mu      = 1;
 k_SSB   = 20;
-SFN_MSB = 37;
-SFN_LSB = 1;
+SFN = 456;
+bSFN = int2bit(SFN,10).';
+SFN_MSB = bit2int([bSFN(1:6), 0, 0, 0, 0].',10);
+SFN_LSB = bit2int(bSFN(7:10).',4);
 tran_bandwidth = 60;
 toff    =0;
 foff    =k_SSB;
@@ -23,9 +24,10 @@ samples_offset = 27000;
 symbs_received = 60;
 
 
-kSSB_bin=int2bit(k_SSB,4,false).';
+kSSB_bin=int2bit(k_SSB,5,false).';
 MIB     =[...
-    int2bit(SFN_MSB,6).',   ... % SFN_MSB
+    0,          ... % just a bit, cos 24 bits required
+    bSFN(1:6),   ... % SFN_MSB
     (scs==15||scs==60),     ... % scs15or60
     kSSB_bin(4:-1:1)           ... % kSsbLsb
     1,                      ... % dmrs pos3
@@ -34,7 +36,6 @@ MIB     =[...
     0,          ... % cellBarred=True
     1,          ... % intraFreqReselection=False
     0,          ... % reserved
-    0,          ... % just a bit, cos 24 bits required
     ];
 %%
 
@@ -44,13 +45,15 @@ for issb=0:(Lmax_*2-1)
     issb_bin=int2bit(mod(issb,Lmax_),6,true);
     bits(:,issb+1)=PbchGenerator.generatePbch(...
         MIB,...
-        SFN_MSB+SFN_LSB,...
+        SFN,...
         issb>=Lmax_,...
-        [k_SSB>=16,0,0],...
+        [k_SSB>=16 0 0],...
         NCellId, ...
         Lmax_...
         );
 end
+
+DATACHECK = PbchReceiver.receivePbch(bits(:,3),NCellId,Lmax_);
 
 %%
 
@@ -83,7 +86,13 @@ rcd.samples=[rcd.samples, zeros(1,SPS-mod(length(rcd.samples),SPS))];
 rcd.rg=OfdmTransceiver.ComplexTime2ResourceGrid(rcd.samples,SPS);
 
 %%
+mismatch.rg=rcd.rg(1:240,1:8)-rg(1:240,5:12);
+mismatch.rg(1:end,1:end) = mismatch.rg(1:end,1:end)>1e-10;
+mismatch.rg_count = sum(mismatch.rg,"all");
+%%
 [rcd.pbch,rcd.issb]=ResourceReceiver.getBitstream(rcd.rg,0,rcd.k_SSB,rcd.NCellId,Lmax_);
+mismatch.bs=(rcd.pbch ~= bits(:,rcd.issb+1).');
+mismatch.bs_err_count = sum(mismatch.bs);
 
 %%
 subplot(2,1,2)
@@ -98,7 +107,7 @@ title(sprintf('Принято со сдвигом ≈ %.4g, обрезано п�
 
 text(36,80,...
      sprintf("NcellID=%d\nkSSB=%d\nSFN=%d\nИндекс блока: %d",...
-            rcd.NCellId,rcd.k_SSB,SFN_MSB+SFN_LSB,rcd.issb),...
+            rcd.NCellId,rcd.k_SSB,SFN,rcd.issb),...
     "BackgroundColor","white");
 %%
 [rcd.data,rcd.valid_crc]=PbchReceiver.receivePbch(cast(rcd.pbch,"double"),rcd.NCellId,Lmax_);
@@ -109,3 +118,4 @@ if (rcd.valid_crc)
 else
     disp("data verification failure")
 end
+disp(mismatch)
