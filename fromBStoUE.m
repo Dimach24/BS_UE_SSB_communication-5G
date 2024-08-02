@@ -87,7 +87,7 @@ rcd.rg=OfdmTransceiver.ComplexTime2ResourceGrid(rcd.samples,SPS);
 
 %%
 mismatch.rg=rcd.rg(1:240,1:8)-rg(1:240,5:12);
-mismatch.rg(1:end,1:end) = mismatch.rg(1:end,1:end)>1e-10;
+mismatch.rg(1:end,1:end) = abs(mismatch.rg(1:end,1:end))>1e-10;
 mismatch.rg_count = sum(mismatch.rg,"all");
 %%
 [rcd.pbch,rcd.issb]=ResourceReceiver.getBitstream(rcd.rg,0,rcd.k_SSB,rcd.NCellId,Lmax_);
