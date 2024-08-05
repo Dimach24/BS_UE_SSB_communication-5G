@@ -41,6 +41,8 @@ MIB     =[...
 
 bits=zeros(864,Lmax_*2);
 
+% payload generation
+
 for issb=0:(Lmax_*2-1)
     issb_bin=int2bit(mod(issb,Lmax_),6,true);
     bits(:,issb+1)=PbchGenerator.generatePbch(...
@@ -55,13 +57,14 @@ end
 
 DATACHECK = PbchReceiver.receivePbch(bits(:,3),NCellId,Lmax_);
 
-%%
+%% frame generation
 
 rg=ResourceTransmitter.GenerateFrame(bits,NCellId,caseL,pointA,tran_bandwidth,toff,foff,[1,1,0.85,0.9]);
 
 % samples per symbol (~sample rate)
 SPS=size(rg,1);
-%%
+
+%% drawing
 subplot(2,1,1);
 plt=pcolor(abs(rg(1:301,1:50)));
 plt.EdgeColor='none';
@@ -72,29 +75,31 @@ xlabel('l+1 (номер OFDM символа +1)')
 ylabel('k (номер поднесущей)')
 text(36,80,sprintf("NcellID=%d\nkSSB=%d\nSFN=%d",NCellId,k_SSB,SFN_MSB+SFN_LSB),"BackgroundColor","white");
 title('Отправлено');
-%%
 
+%% generating time-domain complex signal and cropping it
 samples_part=OfdmTransceiver.ResourceGrid2ComlexTime(rg);
 samples_part=samples_part(samples_offset:samples_offset+symbs_received*SPS);
 
-%%
+%% looking for PSS and doing other stuff to find the SSB
 ... rcd=received
-rcd=struct();
+    rcd=struct();
 [rcd.NCellId,rcd.k_SSB,rcd.tindex,rcd.samples]=SsFinder.processSignalByPeakNo(samples_part,0,23,SPS,1,0.9);
-%%
+
+%% recovering the resource grid
 rcd.samples=[rcd.samples, zeros(1,SPS-mod(length(rcd.samples),SPS))];
 rcd.rg=OfdmTransceiver.ComplexTime2ResourceGrid(rcd.samples,SPS);
 
-%%
+%% resource grid mismatch calculation (doesn't work, FIXME)
 mismatch.rg=rcd.rg(1:240,1:8)-rg(1:240,5:12);
 mismatch.rg(1:end,1:end) = abs(mismatch.rg(1:end,1:end))>1e-10;
 mismatch.rg_count = sum(mismatch.rg,"all");
-%%
+
+%%  extracting bitstream from the recovered resource grid
 [rcd.pbch,rcd.issb]=ResourceReceiver.getBitstream(rcd.rg,0,rcd.k_SSB,rcd.NCellId,Lmax_);
 mismatch.bs=(rcd.pbch ~= bits(:,rcd.issb+1).');
 mismatch.bs_err_count = sum(mismatch.bs);
 
-%%
+%% drawing
 subplot(2,1,2)
 plt=pcolor(abs(rcd.rg(1:301,1:end)));
 plt.EdgeColor='none';
@@ -106,10 +111,11 @@ ylabel('k (номер поднесущей)')
 title(sprintf('Принято со сдвигом ≈ %.4g, обрезано по %.4g',samples_offset/SPS,(rcd.tindex+samples_offset)/SPS));
 
 text(36,80,...
-     sprintf("NcellID=%d\nkSSB=%d\nSFN=%d\nИндекс блока: %d",...
-            rcd.NCellId,rcd.k_SSB,SFN,rcd.issb),...
+    sprintf("NcellID=%d\nkSSB=%d\nSFN=%d\nИндекс блока: %d",...
+    rcd.NCellId,rcd.k_SSB,SFN,rcd.issb),...
     "BackgroundColor","white");
-%%
+
+%% extracting info from bitstream and data validation
 [rcd.data,rcd.valid_crc]=PbchReceiver.receivePbch(cast(rcd.pbch,"double"),rcd.NCellId,Lmax_);
 disp(rcd.data)
 disp(rcd.data.mib)
