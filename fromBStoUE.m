@@ -6,9 +6,9 @@ addpath(genpath(pwd))
 
 NCellId=17;
 
-caseL   = 'B';
+caseL   = 'C';
 scs     = 30;
-pointA  = 4.4;  % GHz
+pointA  = 4.9;  % GHz
 Lmax_   = 8;   % amount of SSB in the HALF-FRAME
 mu      = 1;
 k_SSB   = 20;
@@ -83,7 +83,7 @@ samples_part=samples_part(samples_offset:samples_offset+symbs_received*SPS);
 %% looking for PSS and doing other stuff to find the SSB
 ... rcd=received
     rcd=struct();
-[rcd.NCellId,rcd.k_SSB,rcd.tindex,rcd.samples]=SsFinder.processSignalByPeakNo(samples_part,0,23,SPS,1,0.4);
+[rcd.NCellId,rcd.k_SSB,rcd.tindex,rcd.samples]=SsFinder.processSignalByPeakNo(samples_part,0,23,SPS,1,3e-3);
 
 %% recovering the resource grid
 rcd.samples=[rcd.samples, zeros(1,SPS-mod(length(rcd.samples),SPS))];
