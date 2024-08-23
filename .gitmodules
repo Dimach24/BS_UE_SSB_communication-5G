@@ -16,3 +16,6 @@
 [submodule "PbchGenerator"]
 	path = PbchGenerator
 	url = git@github.com:Dymcos/PbchGenerator.git
+[submodule "RakeReceiver"]
+	path = RakeReceiver-5G
+	url = git@github.com:Dimach24/RakeReceiver-5G.git
