@@ -124,4 +124,5 @@ if (rcd.valid_crc)
 else
     disp("data verification failure")
 end
+disp("mismatches:")
 disp(mismatch)
